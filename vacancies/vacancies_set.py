@@ -56,7 +56,7 @@ class VacanciesSet:
     def _get_vac_page_json(self, page_number: int = 0):
 
         current_date = datetime.today()
-        start_date = current_date - timedelta(45)
+        start_date = current_date - timedelta(30)
         params = {
             'text': f'NAME:("{self.query}")',
             'area': 1,
