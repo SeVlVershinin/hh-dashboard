@@ -59,7 +59,7 @@ class VacanciesSet:
         start_date = current_date - timedelta(30)
         params = {
             'text': f'NAME:("{self.query}")',
-            'area': 1,
+            # 'area': 1,
             'date_from': start_date.strftime('%Y-%m-%d'),
             'date_to': current_date.strftime('%Y-%m-%d'),
             'per_page': 100,
