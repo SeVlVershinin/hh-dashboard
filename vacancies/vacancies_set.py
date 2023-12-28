@@ -1,12 +1,14 @@
-from datetime import datetime, timedelta
-
-import pandas as pd
-import requests
 from pydantic import BaseModel
 from enum import Enum
 
-
-HH_API_URL = 'https://api.hh.ru/vacancies'
+from vacancies.vacancies_datasource import (
+    VacanciesDatasource,
+    SALARY_FROM_PROP,
+    SALARY_TO_PROP,
+    EXPERIENCE_NAME_PROP,
+    SCHEDULE_NAME_PROP,
+    EMPLOYER_NAME_PROP
+)
 
 
 class VacanciesInfo(BaseModel):
@@ -40,34 +42,12 @@ class GroupingType(str, Enum):
 
 
 class VacanciesSet:
-    def __init__(self, query):
-        self.query = query
+    def __init__(self, query: str):
+        self.query = query.lower()
         self._load()
 
     def _load(self):
-        v_page_json = self._get_vac_page_json()
-        found_items = v_page_json['items']
-
-        for i in range(1, v_page_json['pages']):
-            found_items.extend(self._get_vac_page_json(i)['items'])
-
-        self.data_frame = pd.json_normalize(found_items)
-
-    def _get_vac_page_json(self, page_number: int = 0):
-
-        current_date = datetime.today()
-        start_date = current_date - timedelta(30)
-        params = {
-            'text': f'NAME:("{self.query}")',
-            # 'area': 1,
-            'date_from': start_date.strftime('%Y-%m-%d'),
-            'date_to': current_date.strftime('%Y-%m-%d'),
-            'per_page': 100,
-            'page': page_number
-        }
-
-        with requests.get(HH_API_URL, params=params) as request:
-            return request.json()
+        self.data_frame = VacanciesDatasource.get_vacancies_data(self.query)
 
     def get_data(self):
         return self.data_frame
@@ -75,10 +55,10 @@ class VacanciesSet:
     def get_info(self) -> VacanciesInfo:
         return VacanciesInfo(query=self.query,
                              count=self.data_frame.shape[0],
-                             salary_from=self.data_frame['salary.from'].mean(),
-                             salary_to=self.data_frame['salary.to'].mean())
+                             salary_from=self.data_frame[SALARY_FROM_PROP].mean(),
+                             salary_to=self.data_frame[SALARY_TO_PROP].mean())
 
-    def _get_count_by(self, group_column: str = 'employer.name', limit_to: int = 5) -> VacanciesCount:
+    def _get_count_by(self, group_column: str = EMPLOYER_NAME_PROP, limit_to: int = 5) -> VacanciesCount:
         group_series = self.data_frame[group_column].value_counts()
         n = min(limit_to, group_series.shape[0])
 
@@ -89,9 +69,8 @@ class VacanciesSet:
 
     def get_count_by(self, grouping_type):
         if grouping_type == GroupingType.by_employer:
-            return self._get_count_by()
+            return self._get_count_by(EMPLOYER_NAME_PROP)
         elif grouping_type == GroupingType.by_schedule:
-            return self._get_count_by('schedule.name')
+            return self._get_count_by(SCHEDULE_NAME_PROP)
         else:
-            return self._get_count_by('experience.name')
-
+            return self._get_count_by(EXPERIENCE_NAME_PROP)

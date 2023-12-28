@@ -13,7 +13,9 @@ async def root():
 
 
 @app.get("/vacancies/info/{query}", response_model=VacanciesInfo)
-async def info(query: str = Path(description="Фильтр, используемый для поиска вакансий")) -> VacanciesInfo:
+async def info(
+        query: str = Path(description="Фильтр, используемый для поиска вакансий")
+) -> VacanciesInfo:
     """
     С помощью открытого API HeadHunter выполняет поиск вакансий по заданному фильтру query за предыдущий месяц и
     возвращает основные параметры найденного набора: количество и средние значения границ зарплатной вилки в них.
