@@ -12,6 +12,6 @@
 
 Образ сервиса можно скачать с Docker Hub по ссылке: https://hub.docker.com/repository/docker/sevlvershinin/hh-dashboard/
 
-Работающий сервис размещена по адресу: http://94.139.242.35/
+Работающий сервис размещен по адресу: http://94.139.242.35/
 
 
